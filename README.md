@@ -15,30 +15,32 @@ Multimodal AI has become critical for human-like understanding of our world. How
   <img width="590" alt="Screenshot 2023-10-24 at 8 45 31 PM" src="https://github.com/minu803/NextGPT/assets/111295624/601582c4-08cf-4f32-a0cc-c0adf5442efa">
 </p>
 
-**QUESTION:** What is the advantage and disadvantage of using a trained model? Can you name the appropriate model to do the described task?
-
-**ANSWER:** We avoid cold-start training and facilitate the potential growth of more modalities.
 
 ### Multimodal Input Encoding:
-- Existing encoders like ImageBind are used to encode inputs in various modalities (text, image, video, audio)
-- Input projection layers map the encodings into a common language space understandable to the LLM core
+- Converting non-text inputs to text prompts.
+- Each input is processed via an encoder tailored for its modality, resulting in semantic embeddings of the input.
+- Models used: ImageBind, which can process multiple modalities and yield semantic embeddings in the same embedding space. 
 
 ### LLM-centric Alignment:
-- The input projections are trained via image/video/audio captioning tasks
-- This aligns the input representations with the textual feature space of the LLM
+- After obtaining the semantic embeddings, they are passed through small linear models called input projection models.
+- The purpose of these models is to generate text from the embeddings that the LLM can understand.
 
 ### LLM-based Semantic Understanding:
-- The aligned multimodal inputs are fed to the LLM core (e.g. ViCuNA)
-- The LLM performs high-level reasoning and understanding over the multimodal contexts
+- The core LLM produces the text response and also gives instructions for the generation of other modalities.
+- LLM output may contain special tokens (<IMGi>, <AUDi>, <VIDi>) to indicate that output for a particular modality should be generated and to identify the portion of the LLM response related to that modality.
+- Models used: Vicuna-7B, which is common among other multimodal LLMs. 
 
 ### Instruction-following Alignment:
-- The output projections are trained by minimizing the distance between LLM signal tokens and conditioned text tokens of diffusion models
-- This enables diffusion models to accurately interpret LLM's instructions
+- The LLM's output relevant to non-text modalities is processed by small transformer-based models called output projection models.
+- These models convert the LLM outputs into representations suitable for the modality decoders.
 
 ### Multimodal Output Generation:
-- Based on signals from LLM, diffusion models like SD, AudioLDM, and Zeroscope generate outputs
-- Different decoders used for image, video, and audio synthesis
-- Overall end-to-end training enhances coherent cross-modal content creation
+-  Outputs for each modality are generated using their specific diffusion decoder.
+- Models used:
+  - Image diffusion model: Stable Diffusion
+  - Video model: Zeroscope
+  - Audio generation model: AudioLDM
+
 
 ## Deeper Dive
 
@@ -52,6 +54,16 @@ Multimodal AI has become critical for human-like understanding of our world. How
 <p align="center">
   <img width="591" alt="Screenshot 2023-10-24 at 9 00 34 PM" src="https://github.com/minu803/NextGPT/assets/111295624/9fe9c7af-c2f1-4548-bf0d-cb0017b34b5b">
 </p>
+
+**QUESTION:** What is the advantage and disadvantage of using a trained model? Can you name the appropriate model to do the described task?
+
+**ANSWER:** 🤔🤔
+
+
+Only 1% of parameters corresponding to the input and output projections are updated during training with all the rest encoders and decoders frozen. This provides lightweight tuning for the overall framework.
+
+Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)], only 1% parameters are to be updated. This is also one of the key advantages of our MM-LLM.
+
 
 
 ### Lightweight Multimodal Alignment Learning:
@@ -142,8 +154,11 @@ Return P
 ```
 
 ## Code Demonstration
+You can find the necessary code within `anyToImageVideoAudio.py`
 
 ## Video Demonstration
+[![YouTube Video](https://img.youtube.com/vi/aqw2SCWeWD0/maxresdefault.jpg)](https://www.youtube.com/watch?v=aqw2SCWeWD0)
+
 
 ## Resrouces
 

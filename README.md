@@ -43,36 +43,54 @@ Multimodal AI has become critical for human-like understanding of our world. How
 ## Deeper Dive
 
 ### HOW?
-First, we leverage established encoders to encode inputs in various modalities, where these representations are projected into language-like representations comprehensible to the LLM through a projection layer. 
+**First**, we leverage established encoders to encode inputs in various modalities, where these representations are projected into language-like representations comprehensible to the LLM through a projection layer. 
 
-Second, we harness an existing open-sourced LLM as the core to process input information for semantic understanding and reasoning. The LLM not only directly generates text tokens but also produces unique “modality signal” tokens that serve as instructions to dictate the decoding layers whether & what modal content to output correspondingly. 
+**Second**, we harness an existing open-sourced LLM as the core to process input information for semantic understanding and reasoning. The LLM not only directly generates text tokens but also produces unique “modality signal” tokens that serve as instructions to dictate the decoding layers whether & what modal content to output correspondingly. 
 
-Third, the produced multimodal signals with specific instructions, after projection, route to different encoders and finally generate content in corresponding modalities.
+**Third**, the produced multimodal signals with specific instructions, after projection, route to different encoders and finally generate content in corresponding modalities.
 
 <p align="center">
   <img width="591" alt="Screenshot 2023-10-24 at 9 00 34 PM" src="https://github.com/minu803/NextGPT/assets/111295624/9fe9c7af-c2f1-4548-bf0d-cb0017b34b5b">
 </p>
 
 
-
 ### Lightweight Multimodal Alignment Learning:
+<p align="center">
+<img width="842" alt="Screenshot 2023-10-29 at 4 12 07 PM" src="https://github.com/minu803/NextGPT/assets/111295624/42a1f36e-27b2-4cdd-8f1f-1883fe5c96b1">
+</p>
+
 - Performs alignment between input/output projections and LLM core with minimal training
-- Encoding-side alignment: Trains input projections via image/video/audio captioning
-- Aligns multimodal encoder representations with LLM's textual feature space
-- Decoding-side alignment: Minimizes distance between LLM signals and diffusion model text tokens
-- Enables diffusion models to interpret LLM instructions accurately
-- Only input and output projection layers trained - efficient lightweight tuning
+- **Encoding-side alignment:**
+  - Input projection models using image-text, audio-text, and video-text pairs
+  - Non-text input fed to the encoder yields a representation
+  - Representation fed to input projection model to obtain aligned representation for LLM
+  - LLM response compared to text caption, with loss propagated to the input projection model
+- **Decoding-side alignment:**
+  - Uses similar captioned inputs
+  - LLM outputs a response with a signal token, processed through an output projection model (No generation of image, audio, or video)
+  - Comparison made between output from projection model and encoding from text encoder of diffusion model (no actual diffusion process)
+  - Minimizes distance between LLM signals and diffusion model text tokens
+
 
 ### Modality-Switching Instruction Tuning:
-- Introduces novel Modality-Switching Instruction Tuning (MosIT)
-- Manual high-quality dataset with diverse cross-modal instructions
-- Empowers model with complex human-like multimodal reasoning abilities
-- Tuning involves end-to-end training on MosIT data
-- Updates both projections and LLM parameters
-- Result: Improved cross-modal understanding and generation from instructions
+<p align="center">
+<img width="883" alt="Screenshot 2023-10-29 at 4 13 19 PM" src="https://github.com/minu803/NextGPT/assets/111295624/a3849947-578e-4e1a-8c3b-266c462b0a9d">
+</p>
+- System fed with multi-modality dialogue inputs. Use (Input, OUTPUT) pairs
+- LLM's response, with modality signal tokens, compared to gold annotations for LoRA weight updates
+- Gold Annotations for LLM Outputs:
+  - **Text+X to Text:** Input comprises text and another modality, with the output being caption text
+  - **Text to Text+X:** Input is text, while the output is text combined with another modality
+  - **High-Quality Dataset:** A dataset containing comprehensive multi-modality instructions and responses. This leverages GPT-4 for creating dialogues and incorporates images, videos, and audio where appropriate
+
+## Result
+<p align="center">
+<img width="869" alt="Screenshot 2023-10-29 at 4 14 39 PM" src="https://github.com/minu803/NextGPT/assets/111295624/3a7fc12a-1985-4ca3-88d3-86ac450e62bb">
+</p>
 
 ## Critical Analysis:
 - Key strengths of NExT-GPT include end-to-end learning which avoids cascading errors of pipeline systems. The alignment learning minimizes the gap between modalities. Instruction tuning further empowers complex cross-modal capabilities.
+- More competent in producing images, compared with the generations on videos and audio. Also generating mixed combinations of multimodal content is slightly inferior to the generation of single-modal content, due to the complexity.
 - Limitations are that currently only 4 modalities are supported. This can be expanded to more like 3D, tables, etc. Also, the quality is limited by the diffusion model capabilities.
 - Future work involves supporting more modalities and tasks and combining retrieval models to complement the generative process.
 

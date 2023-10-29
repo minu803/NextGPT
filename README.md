@@ -76,6 +76,7 @@ Multimodal AI has become critical for human-like understanding of our world. How
 <p align="center">
 <img width="883" alt="Screenshot 2023-10-29 at 4 13 19 PM" src="https://github.com/minu803/NextGPT/assets/111295624/a3849947-578e-4e1a-8c3b-266c462b0a9d">
 </p>
+
 - System fed with multi-modality dialogue inputs. Use (Input, OUTPUT) pairs
 - LLM's response, with modality signal tokens, compared to gold annotations for LoRA weight updates
 - Gold Annotations for LLM Outputs:

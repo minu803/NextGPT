@@ -109,49 +109,78 @@ Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)], only
 
 ## Multimodal Psudocode:
 ```
-Algorithm: NextGPT
+Algorithm: NextGPT(text, media, θ)
+
 Input: 
-- x ∈ V∗, a sequence of token IDs
-
-Output: 
-- P ∈ [0,1]^(NV x length(x)): P:t represents p̂θ(x(t+1) | x(1:t))
-
+  text: sequence of text prompt tokens 
+  media: image/video/audio input
+  
 Hyperparameters:
-- θmax
-- L: Number of layers
-- H: Number of heads (assuming multi-head attention, but this isn't explicitly mentioned)
-- de: Dimension of embeddings
-- dmlp: Dimension of MLP
-
+  L: number of transformer layers
+  H: number of attention heads
+  de: token embedding dimension
+  
 Parameters θ:
-1. We ∈ R^(de x NV): Token embeddings
-2. Wp ∈ R^(de x θmax): Positional embeddings
-3. For each layer l from 1 to L:
-   - Wl: Multi-head self-attention weights
-   - γl1, βl1, γl2, βl2 ∈ R^de: Layer normalization parameters
-   - Wlmlp1 ∈ R^(dmlp x de), blmlp1 ∈ R^dmlp: MLP weights
-   - Wlmlp2 ∈ R^(de x dmlp), blmlp2 ∈ R^de: MLP weights
-4. γ, β ∈ R^de: Final layer normalization parameters
-5. Wu ∈ R^(NV x de): Unembedding matrix
+  θLLaMa: pretrained LLaMa parameters (frozen) 
+  θencoder: pretrained image/video/audio encoder parameters (frozen)
+  θTextFc: trainable fully-connected alignment modules
+  
+Output:
+  continuation: generated continuation text
+  generation: generated image/video/audio
+  
+# Stage 1: Caption training
+for iter in 1..N1:
+  for (text, media) in dataset:
+    
+    encoding = Encoder(media) # Encode media
+    input = [text, '[IMG]', encoding] # Concatenate
+     
+    p = Transformer(input; θLLaMa) # Forward pass
+    loss = caption_loss(p, text) # Language modeling loss
+    
+    update(θLLaMa, ∇loss) # Update only LLaMa
+  
+# Stage 2: Alignment training  
+for iter in 1..N2:
+  for media in dataset:
+  
+    encoding = Encoder(media)
+    fake_text = '[IMG]'
+    img_embedding = Transformer(fake_text; θLLaMa)
+    loss = ||img_embedding - encoding||22 
+    update(θTextFc, ∇loss) # Update alignment modules
 
-Procedure:
-1. Set θ to length(x)
-2. For each token t from 1 to θ:
-   - Compute embeddings: et = We:x(t) + Wp:t
-3. Concatenate embeddings: X = [e1, ..., eθ]
-4. For each layer l from 1 to L:
-   4.1. For each token t from 1 to θ:
-        - Normalize: X̃:t = layer_norm(X:t | γl1, βl1)
-        - Update X with self-attention: X += MHAttention(X̃ | Wl, Mask)
-   4.2. For each token t from 1 to θ:
-        - Normalize: X̃:t = layer_norm(X:t | γl2, βl2)
-        - MLP update: X += (Wlmlp2 · GELU(Wlmlp1 · X̃ + blmlp1)^T + blmlp2)^T
-5. For each token t from 1 to θ:
-   - Apply final layer normalization: X:t = layer_norm(X:t | γ, β)
-6. Compute output: P = softmax(Wu · X)
+# Stage 3: Joint training
+for iter in 1..N3:
+  for (text, media) in dataset:
+  
+    text_embedding = Transformer(text; θLLaMa) 
+    img_embedding = Transformer('[IMG]'; θLLaMa)
+    img_encoding = Encoder(media)
+    img_embedding = TextFc(img_embedding) # Align
+      
+    encoding = [text_embedding, img_embedding] 
+    p = Transformer(encoding; θLLaMa)
+    loss = caption_loss(p, text) 
+    update(θLLaMa, θTextFc, ∇loss)
+    
+# Inference
+prompt = "[Text prompt]"
+text_embedding = Transformer(prompt; θLLaMa)
 
-Return P
+img_embedding = Transformer('[IMG]'; θLLaMa) 
+img_embedding = TextFc(img_embedding)
+generation = SD(img_embedding) # Generate image
+
+encoding = [text_embedding, img_embedding]
+continuation = sample(Transformer(encoding; θLLaMa))
 ```
+
+- Leverage pre-trained models - LLaMa for text, ImageBind encoder for images.
+- Align modalities using trainable modules - TextFcLayers.
+- Jointly train on a multi-modal task like instruction following.
+- At inference, generate text and images by extracting embeddings at special tokens.
 
 ## Code Demonstration
 You can find the necessary code within `anyToImageVideoAudio.py`
@@ -160,6 +189,14 @@ You can find the necessary code within `anyToImageVideoAudio.py`
 [![YouTube Video](https://img.youtube.com/vi/aqw2SCWeWD0/maxresdefault.jpg)](https://www.youtube.com/watch?v=aqw2SCWeWD0)
 
 
-## Resrouces
+## Citations & Resrouces
+
+- AI Papers Academy. (2023, September 16). Next-GPT: Any-to-any multimodal LLM. YouTube. https://www.youtube.com/watch?v=UtN1hOMces&t=199s&ab_channel=AIPapersAcademy 
+- Akkus, C., Chu, L., Djakovic, V., Jauch-Walser, S., Koch, P., Loss, G., Marquardt, C., Moldovan, M., Sauter, N., Schneider, M., Schulte, R., Urbanczyk, K., Goschenhofer, J., Heumann, C., Hvingelby, R., Schalk, D., & Aßenmacher, M. (2023). Multimodal deep learning. arXiv preprint arXiv:2301.04856. https://arxiv.org/abs/2301.04856
+- van der Maaten, L., & Misra, I. (n.d.). Advances in multimodal understanding research at meta ai. AI at Meta. https://ai.meta.com/blog/advances-in-multimodal-understanding-research-at-meta-ai/ 
+- Wu, S., Fei, H., Qu, L., Ji, W., & Chua, T.-S. (2023, September 13). Next-GPT: Any-to-any multimodal LLM. arXiv.org. https://arxiv.org/abs/2309.05519 
+- Xu, P., Zhu, X., & Clifton, D. A. (2023, May 10). Multimodal learning with transformers: A survey. arXiv.org. https://arxiv.org/abs/2206.06488 
+
+
 
 

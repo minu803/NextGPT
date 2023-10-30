@@ -61,7 +61,7 @@ Multimodal AI has become critical for human-like understanding of our world. How
 
 Only 1% of parameters corresponding to the input and output projections are updated during training with all the rest encoders and decoders frozen. This provides lightweight tuning for the overall framework.
 
-Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)], only 1% parameters are to be updated. This is also one of the key advantages of our MM-LLM.
+Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)] = 0.01056, only 1% parameters are to be updated. This is also one of the key advantages of our MM-LLM.
 
 
 
@@ -105,6 +105,11 @@ Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)], only
 - More competent in producing images, compared with the generations on videos and audio. Also generating mixed combinations of multimodal content is slightly inferior to the generation of single-modal content, due to the complexity.
 - Limitations are that currently only 4 modalities are supported. This can be expanded to more like 3D, tables, etc. Also, the quality is limited by the diffusion model capabilities.
 - Future work involves supporting more modalities and tasks and combining retrieval models to complement the generative process.
+- Need to find the right metrics to assess the NExT-GPT model's performance accurately and in terms of its quality.
+
+**QUESTION:** Can you think of any potential ethical concerns or implications of using models like NExT-GPT in real-world scenarios?
+
+**ANSWER:** 🤔🤔
 
 ## Multimodal Pseudocode:
 ```

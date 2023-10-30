@@ -17,7 +17,6 @@ Multimodal AI has become critical for human-like understanding of our world. How
 
 
 ### Multimodal Input Encoding:
-- Converting non-text inputs to text prompts.
 - Each input is processed via an encoder tailored for its modality, resulting in semantic embeddings of the input.
 - Models used: ImageBind, which can process multiple modalities and yield semantic embeddings in the same embedding space. 
 
@@ -27,7 +26,7 @@ Multimodal AI has become critical for human-like understanding of our world. How
 
 ### LLM-based Semantic Understanding:
 - The core LLM produces the text response and also gives instructions for the generation of other modalities.
-- LLM output may contain special tokens (<IMGi>, <AUDi>, <VIDi>) to indicate that output for a particular modality should be generated and to identify the portion of the LLM response related to that modality.
+- LLM output may contain special tokens, [IMGi], [AUDi], and [VIDi] to indicate that output for a particular modality should be generated and to identify the portion of the LLM response related to that modality.
 - Models used: Vicuna-7B, which is common among other multimodal LLMs. 
 
 ### Instruction-following Alignment:
@@ -107,7 +106,7 @@ Calculation: 131M(=4+33+31+31+32) / [131M + 12.275B(=1.2+7+1.3+1.8+0.975)], only
 - Limitations are that currently only 4 modalities are supported. This can be expanded to more like 3D, tables, etc. Also, the quality is limited by the diffusion model capabilities.
 - Future work involves supporting more modalities and tasks and combining retrieval models to complement the generative process.
 
-## Multimodal Psudocode:
+## Multimodal Pseudocode:
 ```
 Algorithm: NextGPT(text, media, θ)
 
